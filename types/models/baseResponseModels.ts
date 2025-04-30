@@ -1,25 +1,19 @@
-export interface Res<T> {
+export interface ApiResponse<T> {
   data: T;
   total: number;
   page: number;
   limit: number;
 }
 
-export interface UseOptions {
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+}
+
+export interface QueryOptions {
   initialPage?: number;
   initialLimit?: number;
   initialSearch?: string;
-  autoFetch?: boolean;
+  enabled?: boolean;
 }
-
-export interface UseState<T> {
-  customers: T;
-  loading: boolean;
-  error: string | null;
-  totalItems: number;
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-}
-
-
