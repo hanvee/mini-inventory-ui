@@ -59,12 +59,21 @@ export default function CustomerPage() {
       id: "actions",
       header: "Actions",
       cell: (info) => (
-        <div className="flex space-x-2">'
-          <Button variant="secondary" size="sm"  onClick={() => handleEditClick(info.row.original.id)}>
-              Edit
+        <div className="flex space-x-2">
+          '
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleEditClick(info.row.original.id)}
+          >
+            Edit
           </Button>
-          <Button variant="danger" size="sm"  onClick={() => handleDeleteClick(info.row.original)}>
-              Delete
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => handleDeleteClick(info.row.original)}
+          >
+            Delete
           </Button>
         </div>
       ),
@@ -105,10 +114,8 @@ export default function CustomerPage() {
   const handleDeleteConfirm = async () => {
     if (customerToDelete?.id) {
       const success = await deleteCustomer(customerToDelete.id);
-      if (success) {
-        setIsDeleteModalOpen(false);
-        setCustomerToDelete(null);
-      }
+      setIsDeleteModalOpen(false);
+      setCustomerToDelete(null);
     }
   };
 
@@ -200,8 +207,20 @@ export default function CustomerPage() {
           </div>
         )}
         <div className="flex justify-end space-x-3">
-          <Button variant="secondary" size="sm" isLoading={isSubmitting} onClick={() => setIsDeleteModalOpen(false)} children="Cancel"></Button>
-          <Button variant="danger" size="sm" isLoading={isSubmitting} onClick={handleDeleteConfirm} children="Delete"></Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            isLoading={isSubmitting}
+            onClick={() => setIsDeleteModalOpen(false)}
+            children="Cancel"
+          ></Button>
+          <Button
+            variant="danger"
+            size="sm"
+            isLoading={isSubmitting}
+            onClick={handleDeleteConfirm}
+            children="Delete"
+          ></Button>
         </div>
       </Modal>
     </div>

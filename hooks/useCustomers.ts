@@ -1,208 +1,149 @@
-// hooks/useCustomers.ts
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { ICustomer } from '@/types/models';
+import { useCallback, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 import { customerService } from '@/services/customerService';
+import { ICustomer, QueryOptions, PaginationParams } from '@/types/models';
 
-interface UseCustomersOptions {
-  initialPage?: number;
-  initialLimit?: number;
-  initialSearch?: string;
-  autoFetch?: boolean;
-}
-
-interface UseCustomersState {
-  customers: ICustomer[];
-  loading: boolean;
-  error: string | null;
-  totalItems: number;
-  currentPage: number;
-  pageSize: number;
-  totalPages: number;
-}
+const CUSTOMERS_QUERY_KEY = 'customers';
+const CUSTOMER_DETAIL_KEY = 'customer-detail';
 
 export function useCustomers({
   initialPage = 1,
   initialLimit = 10,
   initialSearch = '',
-  autoFetch = true
-}: UseCustomersOptions = {}) {
-  const [state, setState] = useState<UseCustomersState>({
-    customers: [],
-    loading: false,
-    error: null,
-    totalItems: 0,
-    currentPage: initialPage,
-    pageSize: initialLimit,
-    totalPages: 0
-  });
-
-  const stateRef = useRef({
-    currentPage: initialPage,
-    pageSize: initialLimit
-  });
-
-  useEffect(() => {
-    stateRef.current = {
-      currentPage: state.currentPage,
-      pageSize: state.pageSize
-    };
-  }, [state.currentPage, state.pageSize]);
-
-  const [searchTerm, setSearchTerm] = useState(initialSearch);
-  const searchTermRef = useRef(initialSearch);
+  enabled = true
+}: QueryOptions = {}) {
+  const queryClient = useQueryClient();
   
-  useEffect(() => {
-    searchTermRef.current = searchTerm;
-  }, [searchTerm]);
+  const [pagination, setPagination] = useState<PaginationParams>({
+    page: initialPage,
+    limit: initialLimit,
+    search: initialSearch || undefined
+  });
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [operationError, setOperationError] = useState<string | null>(null);
   const [selectedCustomer, setSelectedCustomer] = useState<ICustomer | null>(null);
-  
-  const fetchCustomers = useCallback(async (
-    page?: number, 
-    limit?: number, 
-    search?: string
-  ) => {
-    // Use provided values or fallback to refs (not state)
-    const currentPage = page !== undefined ? page : stateRef.current.currentPage;
-    const currentLimit = limit !== undefined ? limit : stateRef.current.pageSize;
-    const currentSearch = search !== undefined ? search : searchTermRef.current;
-    
-    setState(prev => ({ ...prev, loading: true, error: null }));
-    
-    try {
-      const response = await customerService.getCustomers({
-        page: currentPage,
-        limit: currentLimit,
-        search: currentSearch || undefined
-      });
-      
-      setState(prev => ({
-        ...prev,
-        customers: response.data,
-        loading: false,
-        totalItems: response.total,
-        currentPage: response.page,
-        pageSize: response.limit,
-        totalPages: Math.ceil(response.total / response.limit)
-      }));
-    } catch (err: any) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: err.message || 'Failed to fetch customers'
-      }));
+
+  const customersQuery = useQuery({
+    queryKey: [CUSTOMERS_QUERY_KEY, pagination],
+    queryFn: () => customerService.getCustomers(pagination),
+    enabled: enabled
+  });
+
+  const getCustomerById = useCallback(
+    async (id: number | string) => {
+      try {
+        const customer = await queryClient.fetchQuery({
+          queryKey: [CUSTOMER_DETAIL_KEY, id],
+          queryFn: () => customerService.getCustomerById(id)
+        });
+        setSelectedCustomer(customer);
+        return customer;
+      } catch (error: any) {
+        toast.error(error.message || `Error fetching customer ${id}`);
+        return null;
+      }
+    },
+    [queryClient]
+  );
+
+  const createCustomerMutation = useMutation({
+    mutationFn: (customerData: Omit<ICustomer, 'id'>) => 
+      customerService.createCustomer(customerData),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CUSTOMERS_QUERY_KEY] });
+      toast.success('Customer created successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to create customer');
     }
+  });
+
+  const updateCustomerMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number | string; data: Partial<ICustomer> }) => 
+      customerService.updateCustomer(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CUSTOMERS_QUERY_KEY] });
+      toast.success('Customer updated successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to update customer');
+    }
+  });
+
+  const deleteCustomerMutation = useMutation({
+    mutationFn: (id: number | string) => customerService.deleteCustomer(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [CUSTOMERS_QUERY_KEY] });
+      toast.success('Customer deleted successfully');
+    },
+    onError: (error: any) => {
+      toast.error(error.message || 'Failed to delete customer');
+    }
+  });
+
+  const handlePageChange = useCallback((page: number) => {
+    setPagination(prev => ({ ...prev, page }));
   }, []);
 
-  const createCustomer = useCallback(async (customerData: Omit<ICustomer, 'id'>) => {
-    setIsSubmitting(true);
-    setOperationError(null);
-    
-    try {
-      await customerService.createCustomer(customerData);
-      await fetchCustomers();
-      return true;
-    } catch (err: any) {
-      setOperationError(err.message || 'Error creating customer');
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [fetchCustomers]);
-
-  const updateCustomer = useCallback(async (id: number | string, customerData: Partial<ICustomer>) => {
-    setIsSubmitting(true);
-    setOperationError(null);
-    
-    try {
-      await customerService.updateCustomer(id, customerData);
-      await fetchCustomers();
-      return true;
-    } catch (err: any) {
-      setOperationError(err.message || `Error updating customer ${id}`);
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [fetchCustomers]);
-
-  const deleteCustomer = useCallback(async (id: number | string) => {
-    setIsSubmitting(true);
-    setOperationError(null);
-    
-    try {
-      await customerService.deleteCustomer(id);
-      await fetchCustomers();
-      return true;
-    } catch (err: any) {
-      setOperationError(err.message || `Error deleting customer ${id}`);
-      return false;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [fetchCustomers]);
-
-  const getCustomerById = useCallback(async (id: number | string) => {
-    setIsSubmitting(true);
-    setOperationError(null);
-    
-    try {
-      const customer = await customerService.getCustomerById(id);
-      setSelectedCustomer(customer);
-      return customer;
-    } catch (err: any) {
-      setOperationError(err.message || `Error fetching customer ${id}`);
-      return null;
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handlePageSizeChange = useCallback((limit: number) => {
+    setPagination(prev => ({ ...prev, page: 1, limit }));
   }, []);
 
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
-    fetchCustomers(1, undefined, value);
-  }, [fetchCustomers]);
-
-  const handlePageChange = useCallback((newPage: number) => {
-    fetchCustomers(newPage);
-  }, [fetchCustomers]);
-
-  const handlePageSizeChange = useCallback((newLimit: number) => {
-    fetchCustomers(1, newLimit);
-  }, [fetchCustomers]);
+  const handleSearch = useCallback((search: string) => {
+    setPagination(prev => ({ ...prev, page: 1, search: search || undefined }));
+  }, []);
 
   const refreshData = useCallback(() => {
-    fetchCustomers();
-  }, [fetchCustomers]);
+    queryClient.invalidateQueries({ queryKey: [CUSTOMERS_QUERY_KEY] });
+  }, [queryClient]);
 
   const resetForm = useCallback(() => {
     setSelectedCustomer(null);
-    setOperationError(null);
   }, []);
 
-  useEffect(() => {
-    if (autoFetch) {
-      fetchCustomers(initialPage, initialLimit, initialSearch);
-    }
-  }, [autoFetch, fetchCustomers, initialPage, initialLimit, initialSearch]);
-
   return {
-    ...state,
-    searchTerm,
-    isSubmitting,
-    operationError,
+    customers: customersQuery.data?.data || [],
+    totalItems: customersQuery.data?.total || 0,
+    currentPage: customersQuery.data?.page || pagination.page,
+    pageSize: customersQuery.data?.limit || pagination.limit,
+    totalPages: customersQuery.data 
+      ? Math.ceil(customersQuery.data.total / customersQuery.data.limit)
+      : 0,
+    
+    loading: customersQuery.isLoading,
+    isLoading: customersQuery.isLoading,
+    isError: customersQuery.isError,
+    error: customersQuery.error?.message || null,
+    
     selectedCustomer,
-    createCustomer,
-    updateCustomer,
-    deleteCustomer,
+    setSelectedCustomer,
+    
+    isCreating: createCustomerMutation.isPending,
+    isUpdating: updateCustomerMutation.isPending,
+    isDeleting: deleteCustomerMutation.isPending,
+    
+    isSubmitting: 
+      createCustomerMutation.isPending || 
+      updateCustomerMutation.isPending || 
+      deleteCustomerMutation.isPending,
+
+    operationError: 
+      createCustomerMutation.error?.message || 
+      updateCustomerMutation.error?.message ||
+      deleteCustomerMutation.error?.message,
+    
+    searchTerm: pagination.search || '',
+    
+    createCustomer: createCustomerMutation.mutateAsync,
+    updateCustomer: (id: number | string, data: Partial<ICustomer>) => 
+      updateCustomerMutation.mutateAsync({ id, data }),
+    deleteCustomer: deleteCustomerMutation.mutateAsync,
     getCustomerById,
-    handleSearch,
+    
     handlePageChange,
     handlePageSizeChange,
+    handleSearch,
     refreshData,
-    resetForm,
-    setSelectedCustomer
+    resetForm
   };
 }
