@@ -15,21 +15,15 @@ export default function CustomerPage() {
     loading,
     error,
     totalItems,
-    currentPage,
-    pageSize,
-    totalPages,
     isSubmitting,
     operationError,
     selectedCustomer,
     handleSearch,
-    handlePageChange,
-    handlePageSizeChange,
     createCustomer,
     updateCustomer,
     deleteCustomer,
     getCustomerById,
     resetForm,
-    setSelectedCustomer,
   } = useCustomers();
 
   // UI state
@@ -60,7 +54,6 @@ export default function CustomerPage() {
       header: "Actions",
       cell: (info) => (
         <div className="flex space-x-2">
-          '
           <Button
             variant="secondary"
             size="sm"

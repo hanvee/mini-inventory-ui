@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { ICustomer } from "@/types/models";
 import { Input, SelectInput, Button } from "@/components/ui/form";
 import { Gender } from "@/types/enums/genderEnum";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { customerFormSchema } from "@/types/schemas";
 
 interface CustomerFormProps {
   initialData?: Partial<ICustomer>;
@@ -16,10 +19,18 @@ export default function CustomerFormModal({
   onCancel,
   isSubmitting,
 }: CustomerFormProps) {
-  const [formData, setFormData] = useState<Partial<ICustomer>>({
-    name: initialData?.name ?? "",
-    city: initialData?.city ?? "",
-    gender: initialData?.gender ?? "",
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ICustomer>({
+    resolver: zodResolver(customerFormSchema),
+    defaultValues: {
+      name: initialData?.name || "",
+      city: initialData?.city || "",
+      gender: initialData?.gender || "",
+    },
   });
 
   const genderOptions = Object.values(Gender).map((value) => ({
@@ -27,83 +38,51 @@ export default function CustomerFormModal({
     label: value,
   }));
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
   useEffect(() => {
-    setFormData({
-      name: initialData?.name ?? "",
-      city: initialData?.city ?? "",
-      gender: initialData?.gender ?? "",
-    });
-  }, [initialData?.id]);
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => {
-        const copy = { ...prev };
-        delete copy[name];
-        return copy;
+    if (initialData) {
+      reset({
+        name: initialData?.name || "",
+        city: initialData?.city || "",
+        gender: initialData?.gender || "",
       });
     }
-  };
+  }, [initialData, reset]);
 
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.name?.trim()) newErrors.name = "Name is required";
-    if (!formData.city?.trim()) newErrors.city = "City is required";
-    if (!formData.gender?.trim()) newErrors.gender = "Gender is required";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
+  const handleFormSubmit = async (data: ICustomer) => {
     try {
-      await onSubmit(formData);
+      await onSubmit(data);
     } catch (err) {
-      console.error(err);
+      console.error("Form submission error:", err);
     }
   };
-
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <Input
         id="name"
-        name="name"
         label="Name"
         required={true}
-        value={formData.name || ""}
-        onChange={handleChange}
-        error={errors.name}
         disabled={isSubmitting}
+        error={errors.name?.message}
+        {...register("name")}
       />
 
       <Input
         id="city"
-        name="city"
         label="City"
         required={true}
-        value={formData.city || ""}
-        onChange={handleChange}
-        error={errors.city}
         disabled={isSubmitting}
+        error={errors.city?.message}
+        {...register("city")}
       />
 
       <SelectInput
         id="gender"
-        name="gender"
         label="Gender"
         required={true}
-        value={formData.gender || ""}
-        onChange={handleChange}
-        options={genderOptions}
-        error={errors.gender}
         disabled={isSubmitting}
+        options={genderOptions}
+        error={errors.gender?.message}
+        {...register("gender")}
       />
 
       <div className="flex justify-end space-x-3 pt-4">
