@@ -1,4 +1,3 @@
-// services/customerService.ts
 import api, { ApiError } from '@/lib/api';
 import { ICustomer, ApiResponse, PaginationParams } from '@/types/models';
 

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'react-toastify';
-import { customerService } from '@/services/customerService';
+import { customerService } from '@/services';
 import { ICustomer, QueryOptions, PaginationParams } from '@/types/models';
 
 const CUSTOMERS_QUERY_KEY = 'customers';
