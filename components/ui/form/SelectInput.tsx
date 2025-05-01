@@ -1,7 +1,7 @@
 interface SelectInputProps
   extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
-  options: { value: string; label: string }[];
+  options: { value: string | number; label: string }[];
   error?: string;
   required?: boolean;
 }
@@ -27,6 +27,7 @@ export const SelectInput: React.FC<SelectInputProps> = ({
         error ? "border-red-300" : "border-gray-300"
       } ${className ?? ""}`}
     >
+      <option value="">Select {label}</option>
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
