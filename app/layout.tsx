@@ -24,11 +24,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryClientProvider>
-          <div className="min-h-screen bg-gray-100">
+          <div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col">
             <Navbar />
-            <div className="flex">
+            <div className="flex flex-1 overflow-hidden">
               <Sidebar />
-              <main className="flex-1 p-6 text-gray-900">{children}</main>
+              <main className="flex-1 p-4 sm:p-6 overflow-y-auto">{children}</main>
             </div>
           </div>
           <ToastContainer position="top-right" autoClose={3000} />
