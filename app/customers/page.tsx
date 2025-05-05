@@ -15,18 +15,22 @@ export default function CustomerPage() {
     loading,
     error,
     totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
     isSubmitting,
     operationError,
     selectedCustomer,
     handleSearch,
+    handlePageChange,
+    handlePageSizeChange,
     createCustomer,
-    updateCustomer,
+    updateCustomer, 
     deleteCustomer,
     getCustomerById,
     resetForm,
   } = useCustomers();
 
-  // UI state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -34,7 +38,6 @@ export default function CustomerPage() {
     null
   );
 
-  // Table columns
   const columns = [
     {
       accessorKey: "name",
@@ -142,6 +145,12 @@ export default function CustomerPage() {
             columns={columns}
             searchPlaceholder="Search customers..."
             onSearch={handleSearch}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </>
       )}

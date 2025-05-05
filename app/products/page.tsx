@@ -15,10 +15,15 @@ export default function ProductPage() {
     loading,
     error,
     totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
     isSubmitting,
     operationError,
     selectedProduct,
     handleSearch,
+    handlePageChange,
+    handlePageSizeChange,
     createProduct,
     updateProduct,
     deleteProduct,
@@ -144,6 +149,12 @@ export default function ProductPage() {
             columns={columns}
             searchPlaceholder="Search products..."
             onSearch={handleSearch}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </>
       )}

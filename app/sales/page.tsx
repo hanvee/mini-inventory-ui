@@ -16,11 +16,15 @@ export default function SalePage() {
     loading,
     error,
     totalItems,
+    totalPages,
+    currentPage,
+    pageSize,
     isSubmitting,
     operationError,
     createSale,
     deleteSale,
-    refreshData,
+    handlePageChange,
+    handlePageSizeChange,
     handleSearch,
   } = useSales();
 
@@ -156,6 +160,12 @@ export default function SalePage() {
             columns={columns}
             searchPlaceholder="Search sales..."
             onSearch={handleSearch}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
+            onPageSizeChange={handlePageSizeChange}
           />
         </>
       )}

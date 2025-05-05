@@ -16,8 +16,8 @@ export function useCustomers({
   const queryClient = useQueryClient();
   
   const [pagination, setPagination] = useState<PaginationParams>({
-    page: initialPage,
-    limit: initialLimit,
+    current_page: initialPage,
+    per_page: initialLimit,
     search: initialSearch || undefined
   });
 
@@ -86,11 +86,11 @@ export function useCustomers({
   }, []);
 
   const handlePageSizeChange = useCallback((limit: number) => {
-    setPagination(prev => ({ ...prev, page: 1, limit }));
+    setPagination(prev => ({ ...prev, page: 1, per_page: limit }));
   }, []);
 
-  const handleSearch = useCallback((search: string) => {
-    setPagination(prev => ({ ...prev, page: 1, search: search || undefined }));
+  const handleSearch = useCallback((search: string) => {    
+    setPagination(prev => ({ ...prev, page: 1, search: search }));
   }, []);
 
   const refreshData = useCallback(() => {
@@ -104,23 +104,15 @@ export function useCustomers({
   return {
     customers: customersQuery.data?.data || [],
     totalItems: customersQuery.data?.total || 0,
-    currentPage: customersQuery.data?.page || pagination.page,
-    pageSize: customersQuery.data?.limit || pagination.limit,
-    totalPages: customersQuery.data 
-      ? Math.ceil(customersQuery.data.total / customersQuery.data.limit)
-      : 0,
+    currentPage: customersQuery.data?.current_page || pagination.current_page,
+    pageSize: customersQuery.data?.per_page || pagination.per_page,
+    totalPages: customersQuery.data?.last_page || 0,
     
     loading: customersQuery.isLoading,
-    isLoading: customersQuery.isLoading,
-    isError: customersQuery.isError,
     error: customersQuery.error?.message || null,
     
     selectedCustomer,
     setSelectedCustomer,
-    
-    isCreating: createCustomerMutation.isPending,
-    isUpdating: updateCustomerMutation.isPending,
-    isDeleting: deleteCustomerMutation.isPending,
     
     isSubmitting: 
       createCustomerMutation.isPending || 

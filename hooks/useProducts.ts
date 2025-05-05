@@ -16,8 +16,8 @@ export function useProducts({
   const queryClient = useQueryClient();
   
   const [pagination, setPagination] = useState<PaginationParams>({
-    page: initialPage,
-    limit: initialLimit,
+    current_page: initialPage,
+    per_page: initialLimit,
     search: initialSearch || undefined
   });
 
@@ -86,11 +86,11 @@ export function useProducts({
   }, []);
 
   const handlePageSizeChange = useCallback((limit: number) => {
-    setPagination(prev => ({ ...prev, page: 1, limit }));
+    setPagination(prev => ({ ...prev, page: 1, per_page: limit }));
   }, []);
 
-  const handleSearch = useCallback((search: string) => {
-    setPagination(prev => ({ ...prev, page: 1, search: search || undefined }));
+  const handleSearch = useCallback((search: string) => {    
+    setPagination(prev => ({ ...prev, page: 1, search: search }));
   }, []);
 
   const refreshData = useCallback(() => {
@@ -104,23 +104,15 @@ export function useProducts({
   return {
     products: productQuery.data?.data || [],
     totalItems: productQuery.data?.total || 0,
-    currentPage: productQuery.data?.page || pagination.page,
-    pageSize: productQuery.data?.limit || pagination.limit,
-    totalPages: productQuery.data 
-      ? Math.ceil(productQuery.data.total / productQuery.data.limit)
-      : 0,
+    currentPage: productQuery.data?.current_page || pagination.current_page,
+    pageSize: productQuery.data?.per_page || pagination.per_page,
+    totalPages: productQuery.data?.last_page || 0,
     
     loading: productQuery.isLoading,
-    isLoading: productQuery.isLoading,
-    isError: productQuery.isError,
     error: productQuery.error?.message || null,
     
     selectedProduct,
     setSelectedProduct,
-    
-    isCreating: createProductMutation.isPending,
-    isUpdating: updateProductMutation.isPending,
-    isDeleting: deleteProductMutation.isPending,
     
     isSubmitting: 
       createProductMutation.isPending ||

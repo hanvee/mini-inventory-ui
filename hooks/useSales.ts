@@ -16,11 +16,11 @@ export function useSales({
   const queryClient = useQueryClient();
 
   const [pagination, setPagination] = useState<PaginationParams>({
-    page: initialPage,
-    limit: initialLimit,
-    search: initialSearch || undefined,
+    current_page: initialPage,
+    per_page: initialLimit,
+    search: initialSearch || undefined
   });
-
+  
   const [selectedSale, setSelectedSale] = useState<ISale | null>(null);
 
   const salesQuery = useQuery({
@@ -74,15 +74,11 @@ export function useSales({
   }, []);
 
   const handlePageSizeChange = useCallback((limit: number) => {
-    setPagination((prev) => ({ ...prev, page: 1, limit }));
+    setPagination(prev => ({ ...prev, page: 1, per_page: limit }));
   }, []);
 
-  const handleSearch = useCallback((search: string) => {
-    setPagination((prev) => ({
-      ...prev,
-      page: 1,
-      search: search || undefined,
-    }));
+  const handleSearch = useCallback((search: string) => {    
+    setPagination(prev => ({ ...prev, page: 1, search: search }));
   }, []);
 
   const refreshData = useCallback(() => {
@@ -96,22 +92,15 @@ export function useSales({
   return {
     sales: salesQuery.data?.data || [],
     totalItems: salesQuery.data?.total || 0,
-    currentPage: salesQuery.data?.page || pagination.page,
-    pageSize: salesQuery.data?.limit || pagination.limit,
-    totalPages: salesQuery.data
-      ? Math.ceil(salesQuery.data.total / salesQuery.data.limit)
-      : 0,
+    currentPage: salesQuery.data?.current_page || pagination.current_page,
+    pageSize: salesQuery.data?.per_page || pagination.per_page,
+    totalPages: salesQuery.data?.last_page || 0,
 
     loading: salesQuery.isLoading,
-    isLoading: salesQuery.isLoading,
-    isError: salesQuery.isError,
     error: salesQuery.error?.message || null,
 
     selectedSale,
     setSelectedSale,
-
-    isCreating: createSaleMutation.isPending,
-    isDeleting: deleteSaleMutation.isPending,
 
     isSubmitting: createSaleMutation.isPending || deleteSaleMutation.isPending,
 
