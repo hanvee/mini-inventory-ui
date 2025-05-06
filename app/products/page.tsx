@@ -55,6 +55,10 @@ export default function ProductPage() {
       header: "Price",
     },
     {
+      accessorKey: "color",
+      header: "Color",
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: (info) => (

@@ -31,6 +31,7 @@ export default function ProductFormModal({
       name: initialData?.name || "",
       category: initialData?.category || "",
       price: initialData?.price || 0,
+      color: initialData?.color || "",
     },
   });
 
@@ -46,6 +47,7 @@ export default function ProductFormModal({
         name: initialData.name || "",
         category: initialData.category || "",
         price: initialData.price || 0,
+        color: initialData.color || "",
       });
     }
   }, [initialData, reset]);
@@ -67,6 +69,15 @@ export default function ProductFormModal({
         disabled={isSubmitting}
         error={errors.name?.message}
         {...register("name")}
+      />
+
+      <Input
+        id="color"
+        label="Color"
+        required={true}
+        disabled={isSubmitting}
+        error={errors.color?.message}
+        {...register("color")}
       />
 
       <SelectInput

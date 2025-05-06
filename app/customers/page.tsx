@@ -53,6 +53,10 @@ export default function CustomerPage() {
       header: "Gender",
     },
     {
+      accessorKey: "address",
+      header: "Address",
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: (info) => (

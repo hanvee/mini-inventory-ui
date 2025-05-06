@@ -8,6 +8,7 @@ export const customerSchema = z.object({
   gender: z.nativeEnum(Gender, {
     errorMap: () => ({ message: "Please select a valid gender" }),
   }),
+  address: z.string().min(1, { message: "Address is required" }),
 });
 
 export const customerFormSchema = customerSchema.omit({ id: true });

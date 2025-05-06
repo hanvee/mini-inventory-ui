@@ -3,4 +3,5 @@ export interface ICustomer {
   name: string;
   city: string;
   gender: string;
+  address: string;
 }

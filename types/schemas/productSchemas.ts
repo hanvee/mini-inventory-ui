@@ -8,6 +8,7 @@ export const productSchema = z.object({
     errorMap: () => ({ message: "Please select a valid category" }),
   }),
   price: z.number().min(1, { message: "Price is required" }),
+  color: z.string().min(1, { message: "Color is required" }),
 });
 
 export const productFormSchema = productSchema.omit({ product_code: true });

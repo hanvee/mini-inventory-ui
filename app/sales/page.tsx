@@ -7,8 +7,9 @@ import SaleFormModal from "@/components/sales/SaleFormModal";
 import { ISale } from "@/types/models";
 import { AlertCircle, Eye } from "lucide-react";
 import { Button } from "@/components/ui/form/Button";
-import { useSales, useCustomers } from "@/hooks";
+import { useSales, useCustomers, useProducts } from "@/hooks";
 import { format } from "date-fns";
+import { get } from "http";
 
 export default function SalePage() {
   const {
@@ -29,6 +30,7 @@ export default function SalePage() {
   } = useSales();
 
   const { customers } = useCustomers();
+  const { products } = useProducts();
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -36,11 +38,25 @@ export default function SalePage() {
   const [saleToView, setSaleToView] = useState<ISale | null>(null);
   const [saleToDelete, setSaleToDelete] = useState<ISale | null>(null);
 
-  // Helper function to get customer name by ID
   const getCustomerName = (customerId: number) => {
     const customer = customers.find((c) => c.id === customerId);
     return customer ? customer.name : `Customer #${customerId}`;
   };
+
+  const getCustomerAddress = (customerId: number) => {
+    const customer = customers.find((c) => c.id === customerId);
+    return customer ? customer.address : customerId;
+  };
+
+  const getProductName = (productCode: string) => {
+    const product = products.find((p) => p.product_code === productCode);
+    return product ? product.name : productCode;
+  }
+
+  const getProductColor = (productCode: string) => {
+    const product = products.find((p) => p.product_code === productCode);
+    return product ? product.color : productCode;
+  }
 
   const columns = [
     {
@@ -62,7 +78,7 @@ export default function SalePage() {
     {
       accessorKey: "customer_id",
       header: "Customer",
-      cell: (info) => getCustomerName(info.getValue()),
+      cell: (info) => `${getCustomerName(info.getValue())} - ${getCustomerAddress(info.getValue())}`,
     },
     {
       accessorKey: "subtotal",
@@ -210,7 +226,7 @@ export default function SalePage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Customer</p>
+                <p className="text-sm text-gray-500">Customer Name</p>
                 <p className="font-medium">
                   {getCustomerName(saleToView.customer_id)}
                 </p>
@@ -219,6 +235,12 @@ export default function SalePage() {
                 <p className="text-sm text-gray-500">Total Amount</p>
                 <p className="font-medium text-lg">
                   ${Number(saleToView.subtotal).toFixed(2)}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Customer Address</p>
+                <p className="font-medium">
+                  {getCustomerAddress(saleToView.customer_id)}
                 </p>
               </div>
             </div>
@@ -233,6 +255,9 @@ export default function SalePage() {
                         Product Code
                       </th>
                       <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Color
+                      </th>
+                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Quantity
                       </th>
                     </tr>
@@ -241,7 +266,10 @@ export default function SalePage() {
                     {(saleToView.sale_items || []).map((item, index) => (
                       <tr key={index}>
                         <td className="px-4 py-2 whitespace-nowrap">
-                          {item.product_code}
+                          {getProductName(item.product_code)}
+                        </td>
+                        <td className="px-4 py-2 whitespace-nowrap">
+                          {getProductColor(item.product_code)}
                         </td>
                         <td className="px-4 py-2 whitespace-nowrap">
                           {item.qty}

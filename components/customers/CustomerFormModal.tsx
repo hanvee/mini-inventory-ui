@@ -30,6 +30,7 @@ export default function CustomerFormModal({
       name: initialData?.name || "",
       city: initialData?.city || "",
       gender: initialData?.gender || "",
+      address: initialData?.address || "",
     },
   });
 
@@ -44,6 +45,7 @@ export default function CustomerFormModal({
         name: initialData?.name || "",
         city: initialData?.city || "",
         gender: initialData?.gender || "",
+        address: initialData?.address || "",
       });
     }
   }, [initialData, reset]);
@@ -83,6 +85,15 @@ export default function CustomerFormModal({
         options={genderOptions}
         error={errors.gender?.message}
         {...register("gender")}
+      />
+
+      <Input
+        id="address"
+        label="Address"
+        required={true}
+        disabled={isSubmitting}
+        error={errors.address?.message}
+        {...register("address")}
       />
 
       <div className="flex justify-end space-x-3 pt-4">
